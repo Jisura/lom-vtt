@@ -2,5 +2,29 @@
   "id": "lom",
   "title": "Lord of Mysteries",
   "description": "Та самая система",
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "esmodules": ["lom.mjs"],
+  "styles": ["styles/system-styles.css"],
+  "packs": [{
+    "name": "monsters",
+    "label": "Чудища",
+    "type": "Actor"
+  },
+  {
+    "name": "items",
+    "label": "My Items",
+    "type": "Item"
+  }],
+  "languages": [{
+    "lang": "ru",
+    "name": "Русский",
+    "path": "lang/ru.json"
+  }],
+  "initiative": "1d20",
+  "grid": {
+    "distance": 1.5,
+    "units": "м"
+  },
+  "primaryTokenAttribute": "resources.health",
+  "secondaryTokenAttribute": "resources.mental_health"
 }
