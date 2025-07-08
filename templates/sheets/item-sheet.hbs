@@ -1,0 +1,130 @@
+<form class="{{cssClass}} flexcol" autocomplete="off">
+    <header class="sheet-header">
+        <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" />
+        <div class="header-fields">
+            <h1 class="charname"><input name="name" type="text" value="{{item.name}}" placeholder="{{localize 'LOM.Item.Name'}}" /></h1>
+            <div class="item-type">{{localize (concat "LOM.ItemType" (capitalize item.type))}}</div>
+        </div>
+    </header>
+
+    <section class="sheet-body">
+        <div class="form-group">
+            <label>{{localize "LOM.Item.Description"}}</label>
+            {{editor system.description.value target="system.description.value" button=true owner=owner editable=editable}}
+        </div>
+
+        {{!-- Weapon Specific Fields --}}
+        {{#if (eq item.type "weapon")}}
+        <fieldset class="weapon-details">
+            <legend>{{localize "LOM.Item.WeaponDetails"}}</legend>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.Damage"}}</label>
+                <input type="text" name="system.damage.value" value="{{system.damage.value}}" data-dtype="String" />
+            </div>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.Range"}}</label>
+                <input type="text" name="system.range" value="{{system.range}}" data-dtype="String" />
+            </div>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.Equipped"}}</label>
+                <input type="checkbox" name="system.equipped" {{checked system.equipped}} data-dtype="Boolean" />
+            </div>
+        </fieldset>
+        {{/if}}
+
+        {{!-- Spell Specific Fields --}}
+        {{#if (eq item.type "spell")}}
+        <fieldset class="spell-details">
+            <legend>{{localize "LOM.Item.SpellDetails"}}</legend>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.Level"}}</label>
+                <input type="number" name="system.level" value="{{system.level}}" data-dtype="Number" />
+            </div>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.CastingTime"}}</label>
+                <input type="text" name="system.castingTime" value="{{system.castingTime}}" data-dtype="String" />
+            </div>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.SpellAttack"}}</label>
+                <input type="text" name="system.spellAttack.value" value="{{system.spellAttack.value}}" data-dtype="String" />
+            </div>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.SpellDamage"}}</label>
+                <input type="text" name="system.spellDamage.value" value="{{system.spellDamage.value}}" data-dtype="String" />
+            </div>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.Uses"}}</label>
+                <input type="number" name="system.uses.value" value="{{system.uses.value}}" data-dtype="Number" />
+                / <input type="number" name="system.uses.max" value="{{system.uses.max}}" data-dtype="Number" />
+            </div>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.Recharge"}}</label>
+                <input type="text" name="system.uses.recharge" value="{{system.uses.recharge}}" data-dtype="String" />
+            </div>
+        </fieldset>
+        {{/if}}
+
+        {{!-- Ability Specific Fields --}}
+        {{#if (eq item.type "ability")}}
+        <fieldset class="ability-details">
+            <legend>{{localize "LOM.Item.AbilityDetails"}}</legend>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.RollFormula"}}</label>
+                <input type="text" name="system.rollFormula.value" value="{{system.rollFormula.value}}" data-dtype="String" />
+            </div>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.Uses"}}</label>
+                <input type="number" name="system.uses.value" value="{{system.uses.value}}" data-dtype="Number" />
+                / <input type="number" name="system.uses.max" value="{{system.uses.max}}" data-dtype="Number" />
+            </div>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.Recharge"}}</label>
+                <input type="text" name="system.uses.recharge" value="{{system.uses.recharge}}" data-dtype="String" />
+            </div>
+        </fieldset>
+        {{/if}}
+
+        {{!-- Armor Specific Fields --}}
+        {{#if (eq item.type "armor")}}
+        <fieldset class="armor-details">
+            <legend>{{localize "LOM.Item.ArmorDetails"}}</legend>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.ArmorValue"}}</label>
+                <input type="number" name="system.armorValue" value="{{system.armorValue}}" data-dtype="Number" />
+            </div>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.Equipped"}}</label>
+                <input type="checkbox" name="system.equipped" {{checked system.equipped}} data-dtype="Boolean" />
+            </div>
+        </fieldset>
+        {{/if}}
+
+        {{!-- Equipment Specific Fields --}}
+        {{#if (eq item.type "equipment")}}
+        <fieldset class="equipment-details">
+            <legend>{{localize "LOM.Item.EquipmentDetails"}}</legend>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.Equipped"}}</label>
+                <input type="checkbox" name="system.equipped" {{checked system.equipped}} data-dtype="Boolean" />
+            </div>
+        </fieldset>
+        {{/if}}
+
+        {{!-- Consumable Specific Fields --}}
+        {{#if (eq item.type "consumable")}}
+        <fieldset class="consumable-details">
+            <legend>{{localize "LOM.Item.ConsumableDetails"}}</legend>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.Uses"}}</label>
+                <input type="number" name="system.uses.value" value="{{system.uses.value}}" data-dtype="Number" />
+                / <input type="number" name="system.uses.max" value="{{system.uses.max}}" data-dtype="Number" />
+            </div>
+            <div class="form-group">
+                <label>{{localize "LOM.Item.Recharge"}}</label>
+                <input type="text" name="system.uses.recharge" value="{{system.uses.recharge}}" data-dtype="String" />
+            </div>
+        </fieldset>
+        {{/if}}
+
+    </section>
+</form>

@@ -187,27 +187,133 @@
     }
   },
   "Item": {
-    "types": [ "weapon", "armor", "equipment", "ability", "consumable" ],
-    "weapon": {
-      "description": "",
-      "damage": "1d8",
-      "rangeShort": 10,
-      "rangeNormal": 30,
-      "rangeLong": 60,
-      "rangeExtreme": 120,
-      "misfire": 1,
-      "proficiency": "smallFirearms"
+    "templates": {
+      "base": {
+        "description": {
+          "value": "",
+          "chat": "",
+          "unidentified": ""
+        },
+        "source": ""
+      },
+      "rollable": {
+        "rollFormula": {
+          "value": "",
+          "type": "String"
+        }
+      },
+      "uses": {
+        "value": {
+          "type": "Number",
+          "min": 0,
+          "max": 0,
+          "step": 1,
+          "editable": true,
+          "value": 0,
+          "formula": ""
+        },
+        "max": {
+          "type": "Number",
+          "min": 0,
+          "max": 0,
+          "step": 1,
+          "editable": true,
+          "value": 0,
+          "formula": ""
+        },
+        "recharge": {
+          "value": "",
+          "type": "String"
+        }
+      }
     },
-    "armor": {
-      "description": "",
-      "physicalBonus": 0,
-      "magicalBonus": 0
+    "types": [
+      "item",
+      "skill",
+      "ability",
+      "spell",
+      "weapon",
+      "armor",
+      "equipment",
+      "consumable"
+    ],
+    "item": {
+      "templates": [ "base" ]
+    },
+    "skill": {
+      "templates": [ "base" ],
+      "proficient": false
     },
     "ability": {
-      "description": "",
-      "sequence": 9,
-      "cooldown": "",
-      "cost": ""
+      "templates": [ "base", "rollable" ],
+      "category": "",
+      "uses": {
+        "value": 0,
+        "max": 0,
+        "recharge": ""
+      }
+    },
+    "spell": {
+      "templates": [ "base", "rollable", "uses" ],
+      "level": {
+        "type": "Number",
+        "min": 0,
+        "max": 9,
+        "step": 1,
+        "editable": true,
+        "value": 0
+      },
+      "castingTime": {
+        "value": "",
+        "type": "String"
+      },
+      "spellAttack": {
+        "value": "",
+        "type": "String"
+      },
+      "spellDamage": {
+        "value": "",
+        "type": "String"
+      }
+    },
+    "weapon": {
+      "templates": [ "base" ],
+      "damage": {
+        "value": "",
+        "type": "String"
+      },
+      "range": {
+        "value": "",
+        "type": "String"
+      },
+      "equipped": {
+        "type": "Boolean",
+        "value": false
+      }
+    },
+    "armor": {
+      "templates": [ "base" ],
+      "armorValue": {
+        "type": "Number",
+        "min": 0,
+        "step": 1,
+        "editable": true,
+        "value": 0
+      },
+      "equipped": {
+        "type": "Boolean",
+        "value": false
+      }
+    },
+    "equipment": {
+      "templates": [ "base" ],
+      "equipped": {
+        "type": "Boolean",
+        "value": false
+      }
+    },
+    "consumable": {
+      "templates": [ "base", "uses" ]
     }
   }
 }

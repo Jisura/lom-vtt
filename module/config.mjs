@@ -1,3 +1,4 @@
+// config.mjs
 export const LOM = {};
 
 LOM.attributes = {

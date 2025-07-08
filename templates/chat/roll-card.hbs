@@ -1,0 +1,24 @@
+        <div class="lom-chat-card lom-roll-card" data-actor-id="{{actor.id}}">
+            <header class="card-header flexrow">
+                <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+                <h3 class="roll-title">{{label}}</h3>
+            </header>
+            <div class="card-content">
+                <div class="roll-formula">{{formula}}</div>
+                <div class="roll-result">
+                    <span class="dice-total">{{roll.total}}</span>
+                    {{#if roll.has-critical}} <span class="critical-success">{{localize "LOM.CriticalSuccess"}}</span> {{/if}}
+                    {{#if roll.has-fumble}} <span class="critical-failure">{{localize "LOM.CriticalFailure"}}</span> {{/if}}
+                </div>
+                {{#if roll.tooltip}}
+                <div class="dice-tooltip">
+                    {{{roll.tooltip}}}
+                </div>
+                {{/if}}
+            </div>
+            <footer class="card-footer">
+                {{#if isGM}}
+                <button type="button" data-action="reroll-card" data-roll-id="{{roll.rollId}}">{{localize "LOM.Reroll"}}</button>
+                {{/if}}
+            </footer>
+        </div>

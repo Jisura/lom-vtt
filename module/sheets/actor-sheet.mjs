@@ -1,163 +1,234 @@
-import { LoMActor } from "../documents/actor.mjs";
+// module/sheets/actor-sheet.mjs
 
-export class LoMCharacterSheet extends ActorSheet {
+import { LOMLegendsActor } from "../documents/actor.mjs";
 
+// Запасное изображение для предметов без иконки
+const DEFAULT_TOKEN = "icons/svg/mystery-man.svg"; // Убедитесь, что этот путь верен или измените его
+
+// ИСПОЛЬЗУЕМ НОВЫЙ API
+const { ActorSheet } = foundry.appv1.sheets;
+const { getProperty, mergeObject } = foundry.utils; // Импортируем getProperty и mergeObject
+const { TextEditor } = foundry.applications.ux; // Импортируем TextEditor
+
+/**
+ * Расширяем базовый ActorSheet для персонажей системы Lord of Mysteries.
+ */
+export class LOMLegendsActorSheet extends ActorSheet {
+
+    /** @override */
     static get defaultOptions() {
-        return mergeObject(super.defaultOptions, {
+        return mergeObject(super.defaultOptions, { // Используем импортированный mergeObject
             classes: ["lotm-rpg", "sheet", "actor", "character"],
-            template: "systems/LordOfMysteries/templates/sheets/actor-sheet.hbs", 
-            width: 950, 
-            height: 850, 
+            template: "systems/LordOfMysteries/templates/sheets/actor-sheet.hbs",
+            width: 950,
+            height: 850,
             tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "main" }],
             draggable: true,
             resizable: true
         });
     }
 
+    /** @override */
     async getData() {
         const context = await super.getData();
-        context.system = this.actor.system;
+        context.actor = context.document;
+        context.system = context.document.system;
         context.isGM = game.user.isGM;
-        
-        context.config = CONFIG.LOM;
-
+        this._prepareCharacterData(context);
         this._prepareItems(context);
-
-        context.biographyHTML = await TextEditor.enrichHTML(context.system.biography, {
+        context.biographyHTML = await TextEditor.enrichHTML(context.system.biography, { // Используем импортированный TextEditor
             secrets: this.actor.isOwner,
             async: true
         });
-        
         return context;
     }
-    
+
+    /**
+     * Вспомогательный метод для расчета производных данных.
+     * Лучше перенести эту логику в LOMLegendsActor.prepareData().
+     * @param {Object} context Контекст данных листа.
+     * @private
+     */
+    _prepareCharacterData(context) {
+        const systemData = context.system;
+        for (let [key, attribute] of Object.entries(systemData.attributes)) {
+            attribute.mod = Math.floor((Number(attribute.value) - 10) / 2);
+        }
+        for (let [key, skill] of Object.entries(systemData.skills)) {
+            const attributeKey = skill.attribute;
+            const attributeMod = systemData.attributes[attributeKey].mod;
+            skill.value = (skill.proficient ? 2 : 0) + attributeMod;
+        }
+    }
+
+    /**
+     * Группирует предметы по категориям для инвентаря.
+     * @param {Object} context Контекст данных листа.
+     * @private
+     */
     _prepareItems(context) {
         const inventory = {
-            weapon: { label: "LOM.Item.Type.Weapon", items: [] },
-            armor: { label: "LOM.Item.Type.Armor", items: [] },
-            equipment: { label: "LOM.Item.Type.Equipment", items: [] },
-            consumable: { label: "LOM.Item.Type.Consumable", items: [] },
-            ability: { label: "LOM.Item.Type.Ability", items: [] }
+            weapon: { label: game.i18n.localize("LOM.ItemTypeWeapon"), items: [] },
+            armor: { label: game.i18n.localize("LOM.ItemTypeArmor"), items: [] },
+            equipment: { label: game.i18n.localize("LOM.ItemTypeEquipment"), items: [] },
+            consumable: { label: game.i18n.localize("LOM.ItemTypeConsumable"), items: [] },
+            ability: { label: game.i18n.localize("LOM.ItemTypeAbility"), items: [] },
+            spell: { label: game.i18n.localize("LOM.ItemTypeSpell"), items: [] }
         };
-
         for (let i of context.actor.items) {
+            i.img = i.img || DEFAULT_TOKEN;
             if (i.type in inventory) {
-                i.img = i.img || DEFAULT_TOKEN;
                 inventory[i.type].items.push(i);
             }
         }
-        context.inventory = Object.values(inventory);
+        context.inventory = Object.values(inventory).filter(g => g.items.length > 0);
     }
 
+    /** @override */
     activateListeners(html) {
         super.activateListeners(html);
         if (!this.isEditable) return;
-
-        html.find('.rollable').click(this._onRoll.bind(this));
-        
+        html.find('.rollable-attribute').click(this._onAttributeRoll.bind(this));
+        html.find('.rollable-skill').click(this._onSkillRoll.bind(this));
+        html.find('.item[data-action="roll-item"]').click(this._onRollItem.bind(this));
+        html.find('.item-create').click(this._onItemCreate.bind(this));
+        html.find('.item-delete').click(this._onItemDelete.bind(this));
+        html.find('.item-edit, .ability-item[data-action="edit-item"]').click(this._onItemEdit.bind(this));
+        html.find('.resource-counter').mousedown(this._onResourceClick.bind(this));
+        html.find('.control-button[data-action="manual-set-resource"]').click(this._onManualSetResource.bind(this));
+        html.find('.control-button[data-action="edit-max-resource"]').click(this._onEditMaxResource.bind(this));
         html.find('.sequence-header').click(ev => {
             const header = $(ev.currentTarget);
             const content = header.siblings('.ability-list');
             content.slideToggle(200);
             header.find('i').toggleClass('fa-chevron-right fa-chevron-down');
         });
-        
-        html.find('.item-create').click(this._onItemCreate.bind(this));
-        html.find('.item-delete').click(this._onItemDelete.bind(this));
-        html.find('.item-edit, .ability-item[data-action="edit-item"]').click(this._onItemEdit.bind(this));
+    }
 
-        html.find('.resource-counter').mousedown(this._onResourceClick.bind(this));
-        html.find('.control-button[data-action="manual-set-resource"]').click(this._onManualSetResource.bind(this));
-        html.find('.control-button[data-action="edit-max-resource"]').click(this._onEditMaxResource.bind(this));
+    /** @override */
+    async _onDropItem(event, data) {
+        if (!this.isEditable) return;
+        const item = await Item.fromDropData(data);
+        if (!item) return;
+        return await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
     }
 
     /**
-     * НОВЫЙ МЕТОД: Обработка перетаскивания предметов на лист.
-     * @override
+     * Бросок проверки атрибута.
+     * @param {Event} event
+     * @private
      */
-    async _onDropItem(event, data) {
-        if (!this.isEditable) return;
-
-        const item = await Item.fromDropData(data);
-        if (!item) return;
-
-        const itemData = item.toObject();
-
-        return await this.actor.createEmbeddedDocuments("Item", [itemData]);
-    }
-
-    async _onRoll(event) {
+    async _onAttributeRoll(event) {
         event.preventDefault();
-        const element = event.currentTarget;
-        const dataset = element.dataset;
-        let rollFormula = "1d20";
-        let flavorText = "";
-        let modifier = 0;
-
-        if (dataset.attributeKey) {
-            const attrKey = dataset.attributeKey;
-            const attribute = this.actor.system.attributes[attrKey];
-            if (!attribute) return console.error(`Attribute ${attrKey} not found!`);
-            modifier = attribute.mod;
-            flavorText = `Проверка характеристики: <strong>${attribute.label}</strong>`;
-        } else if (dataset.skillKey) {
-            const skillKey = dataset.skillKey;
-            const skill = this.actor.system.skills[skillKey];
-            if (!skill) return console.error(`Skill ${skillKey} not found!`);
-            flavorText = `Проверка навыка: <strong>${skill.label}</strong>`;
-            
-            if (skill.proficient) {
-                const attribute = this.actor.system.attributes[skill.attribute];
-                if (!attribute) return console.error(`Attribute ${skill.attribute} for skill ${skillKey} not found!`);
-                modifier = attribute.mod;
-            } else {
-                modifier = 0;
-            }
-        }
-
-        rollFormula += ` + ${modifier}`;
+        const attributeKey = event.currentTarget.dataset.attributeKey;
+        const attribute = this.actor.system.attributes[attributeKey];
+        if (!attribute) return;
+        const rollFormula = `1d20 + ${attribute.mod}`;
+        const rollLabel = `Проверка: ${attribute.label}`;
         const roll = new Roll(rollFormula, this.actor.getRollData());
-        await roll.evaluate({ async: true });
-        roll.toMessage({ speaker: ChatMessage.getSpeaker({ actor: this.actor }), flavor: flavorText });
+        await roll.evaluate(); // УБРАН async: true
+        const chatData = {
+            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+            content: await renderTemplate("systems/LordOfMysteries/templates/chat/roll-card.hbs", {
+                roll: roll,
+                actor: this.actor,
+                label: rollLabel,
+                formula: rollFormula,
+                isGM: game.user.isGM
+            }),
+            type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+            roll: roll,
+            sound: CONFIG.sounds.dice
+        };
+        ChatMessage.create(chatData);
     }
 
+    /**
+     * Бросок проверки навыка.
+     * @param {Event} event
+     * @private
+     */
+    async _onSkillRoll(event) {
+        event.preventDefault();
+        const skillKey = event.currentTarget.dataset.skillKey;
+        const skill = this.actor.system.skills[skillKey];
+        if (!skill) return;
+        const rollFormula = `1d20 + ${skill.value}`;
+        const rollLabel = `Проверка: ${skill.label}`;
+        const roll = new Roll(rollFormula, this.actor.getRollData());
+        await roll.evaluate(); // УБРАН async: true
+        const chatData = {
+            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+            content: await renderTemplate("systems/LordOfMysteries/templates/chat/roll-card.hbs", {
+                roll: roll,
+                actor: this.actor,
+                label: rollLabel,
+                formula: rollFormula,
+                isGM: game.user.isGM
+            }),
+            type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+            roll: roll,
+            sound: CONFIG.sounds.dice
+        };
+        ChatMessage.create(chatData);
+    }
+
+    /**
+     * Бросок предмета из инвентаря.
+     * @param {Event} event
+     * @private
+     */
+    async _onRollItem(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.closest(".item").dataset.itemId;
+        const item = this.actor.items.get(itemId);
+        if (!item) return;
+        if (typeof item.roll === 'function') {
+            item.roll();
+        } else {
+            ui.notifications.warn(game.i18n.localize("LOM.Notify.ItemNotRollable").replace("{itemName}", item.name));
+        }
+    }
+
+    /**
+     * Обработка кликов по счетчикам ресурсов для изменения значений.
+     * @param {Event} event
+     * @private
+     */
     async _onResourceClick(event) {
         event.preventDefault();
         const element = event.currentTarget;
         if (event.target.closest('.control-button')) return;
-
         const resourcePath = element.dataset.resourcePath;
         if (!resourcePath) return;
-
-        let currentValue = getProperty(this.actor, `${resourcePath}.value`);
+        let currentValue = getProperty(this.actor, `${resourcePath}.value`); // Используем импортированный getProperty
         if (typeof currentValue !== 'number') return;
-        
         const change = event.shiftKey ? 5 : 1;
         let newValue = (event.button === 0) ? currentValue + change : currentValue - change;
-
         if (newValue < 0) newValue = 0;
-
         if (resourcePath === "system.health" || resourcePath === "system.mentalHealth") {
-            const maxValue = getProperty(this.actor, `${resourcePath}.max`);
+            const maxValue = getProperty(this.actor, `${resourcePath}.max`); // Используем импортированный getProperty
             if (newValue > maxValue) newValue = maxValue;
         }
-        
-        await this.actor.update({ [`${resourcePath}.value`]: newValue }); 
+        await this.actor.update({ [`${resourcePath}.value`]: newValue });
     }
 
+    /**
+     * Открытие диалога для ручной установки значения ресурса.
+     * @param {Event} event
+     * @private
+     */
     async _onManualSetResource(event) {
         event.preventDefault();
         const element = event.currentTarget;
         const resourceContainer = element.closest('.resource-counter');
         const resourcePath = resourceContainer.dataset.resourcePath;
         if (!resourcePath) return;
-
-        const currentValue = getProperty(this.actor, `${resourcePath}.value`);
+        const currentValue = getProperty(this.actor, `${resourcePath}.value`); // Используем импортированный getProperty
         const maxPath = `${resourcePath}.max`;
         const maxValue = getProperty(this.actor, maxPath);
-
         const dialog = new Dialog({
-            title: `Set Value for ${resourcePath.split('.').pop()}`,
+            title: game.i18n.localize("LOM.ManualSetValueTitle").replace("{resourceName}", resourcePath.split('.').pop()),
             content: `<div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
                         <input type="number" value="${currentValue}" style="width: 80px; text-align: center;"/>
                         ${maxValue !== undefined ? `<span> / ${maxValue}</span>` : ''}
@@ -165,7 +236,7 @@ export class LoMCharacterSheet extends ActorSheet {
             buttons: {
                 set: {
                     icon: '<i class="fas fa-check"></i>',
-                    label: "Set",
+                    label: game.i18n.localize("LOM.Set"),
                     callback: (html) => {
                         let newValue = parseInt(html.find('input').val());
                         if (isNaN(newValue)) return;
@@ -180,6 +251,11 @@ export class LoMCharacterSheet extends ActorSheet {
         dialog.render(true);
     }
 
+    /**
+     * Обработка изменения максимального значения ресурса (только для ГМа).
+     * @param {Event} event
+     * @private
+     */
     async _onEditMaxResource(event) {
         event.preventDefault();
         if (!game.user.isGM) return;
@@ -188,25 +264,32 @@ export class LoMCharacterSheet extends ActorSheet {
         const resourcePath = resourceContainer.dataset.resourcePath;
         const change = parseInt(element.dataset.change);
         if (!resourcePath || isNaN(change)) return;
-
         const maxPath = `${resourcePath}.max`;
-        let maxValue = getProperty(this.actor, maxPath);
+        let maxValue = getProperty(this.actor, maxPath); // Используем импортированный getProperty
         if (typeof maxValue !== 'number') return;
-
         let newMax = maxValue + change;
         if (newMax < 0) newMax = 0;
-
         await this.actor.update({ [maxPath]: newMax });
     }
 
+    /**
+     * Создание нового предмета.
+     * @param {Event} event
+     * @private
+     */
     async _onItemCreate(event) {
         event.preventDefault();
         const header = event.currentTarget;
         const type = header.dataset.type;
-        const itemData = { name: `New ${type.capitalize()}`, type: type };
+        const itemData = { name: `${game.i18n.localize("LOM.New")} ${type.capitalize()}`, type: type };
         return await Item.create(itemData, {parent: this.actor});
     }
 
+    /**
+     * Редактирование существующего предмета.
+     * @param {Event} event
+     * @private
+     */
     async _onItemEdit(event) {
         event.preventDefault();
         const li = event.currentTarget.closest("[data-item-id]");
@@ -214,6 +297,11 @@ export class LoMCharacterSheet extends ActorSheet {
         item.sheet.render(true);
     }
 
+    /**
+     * Удаление существующего предмета.
+     * @param {Event} event
+     * @private
+     */
     async _onItemDelete(event) {
         event.preventDefault();
         const li = event.currentTarget.closest("[data-item-id]");
