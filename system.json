@@ -1,30 +1,31 @@
 {
-  "id": "lom",
-  "title": "Lord of Mysteries",
-  "description": "Та самая система",
+  "id": "LordOfMysteries",
+  "title": "Lord of Mysteries RPG",
+  "description": "A custom d20 system for the Lord of Mysteries setting.",
   "version": "0.0.1",
-  "esmodules": ["lom.mjs"],
-  "styles": ["styles/system-styles.css"],
-  "packs": [{
-    "name": "monsters",
-    "label": "Чудища",
-    "type": "Actor"
-  },
-  {
-    "name": "items",
-    "label": "My Items",
-    "type": "Item"
-  }],
-  "languages": [{
-    "lang": "ru",
-    "name": "Русский",
-    "path": "lang/ru.json"
-  }],
-  "initiative": "1d20",
+  "esmodules": [
+    "module/LordOfMysteries.mjs"
+  ],
+  "styles": [
+    "css/style.css"
+  ],
+  "packs": [],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "ru",
+      "name": "Russian",
+      "path": "lang/ru.json"
+    }
+  ],
   "grid": {
-    "distance": 1.5,
-    "units": "м"
+    "distance": 1,
+    "units": "hex"
   },
-  "primaryTokenAttribute": "resources.health",
-  "secondaryTokenAttribute": "resources.mental_health"
+  "primaryTokenAttribute": "health",
+  "secondaryTokenAttribute": "mentalHealth"
 }

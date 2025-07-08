@@ -1,0 +1,467 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400&display=swap');
+
+:root {
+    --primary-gold: #c5b389;
+    --dark-gold: #6d614a;
+    --bright-gold: #f0e0b8;
+    --bg-color: #1a1a1a;
+    --bg-panel: rgba(15, 15, 15, 0.6);
+    --font-main: 'Roboto', sans-serif;
+    --font-display: 'Cinzel', serif;
+    --text-shadow: 0 0 5px rgba(0,0,0,0.8);
+}
+
+.lotm-rpg.sheet.actor {
+    background-color: var(--bg-color);
+    color: var(--primary-gold);
+    font-family: var(--font-main);
+    position: relative;
+    z-index: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+    .lotm-rpg.sheet.actor::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('../assets/logo.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        opacity: 0.08;
+        z-index: -1;
+    }
+
+/* ИСПРАВЛЕНО: Пункт 1 - Тени для текста */
+.lotm-rpg h1, .lotm-rpg h2, .lotm-rpg h3, .lotm-rpg .panel-label, .lotm-rpg .box-label, .lotm-rpg .attribute-label, .lotm-rpg .attribute-mod, .lotm-rpg .resource-values, .lotm-rpg .movement-value, .lotm-rpg .item-name,
+.sheet-header .charname input, /* Тень для имени актера */
+.sheet-tabs .item /* Тень для названий вкладок */ {
+    text-shadow: var(--text-shadow);
+}
+
+.sheet-header {
+    display: flex;
+    padding: 10px;
+    border-bottom: 2px solid var(--primary-gold);
+}
+
+    .sheet-header .profile-img {
+        flex: 0 0 100px;
+        height: 100px;
+        border: 1px solid var(--dark-gold);
+    }
+
+    .sheet-header .header-fields {
+        flex: 1;
+        padding-left: 10px;
+    }
+
+    .sheet-header .charname input {
+        width: 100%;
+        height: 40px;
+        font-size: 32px;
+        font-family: var(--font-display);
+        border: none;
+        background: transparent;
+        color: var(--bright-gold);
+    }
+
+    .sheet-header .header-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+input[type="text"], input[type="number"] {
+    background: var(--bg-panel);
+    border: 1px solid var(--dark-gold);
+    color: var(--primary-gold);
+    text-align: center;
+    padding: 2px 5px;
+}
+
+.sheet-tabs {
+    flex: 0 0 40px;
+    display: flex;
+    border-bottom: 1px solid var(--dark-gold);
+}
+
+    .sheet-tabs .item {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        font-family: var(--font-display);
+        font-size: 1.2em;
+        background: var(--bg-panel);
+        border-top: 1px solid var(--dark-gold);
+        border-right: 1px solid var(--dark-gold);
+        border-bottom: 1px solid var(--dark-gold);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .sheet-tabs .item:first-child {
+            border-left: 1px solid var(--dark-gold);
+        }
+
+        .sheet-tabs .item.active {
+            background: transparent;
+            border-bottom: none;
+            color: var(--bright-gold);
+            text-shadow: 0 0 5px var(--bright-gold);
+        }
+
+        .sheet-tabs .item:hover {
+            background: rgba(197, 179, 137, 0.1);
+        }
+
+.sheet-body {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.tab.main .main-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr 250px;
+    gap: 15px;
+    padding: 10px;
+    height: 100%;
+}
+
+.left-panel, .center-panel, .right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.panel-label, .box-label {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-align: center;
+    border-bottom: 1px solid var(--dark-gold);
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    color: var(--bright-gold);
+}
+
+.angled-box {
+    border: 1px solid var(--dark-gold);
+    background: var(--bg-panel);
+    padding: 10px;
+    position: relative;
+    margin-top: 15px;
+}
+
+    .angled-box .box-label {
+        position: absolute;
+        top: -12px;
+        left: 20px;
+        background: var(--bg-color);
+        padding: 0 10px;
+        border: none;
+    }
+
+.attribute-row {
+    display: grid;
+    grid-template-columns: 1fr 40px 40px;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.attribute-label {
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+    .attribute-label:hover {
+        color: var(--bright-gold);
+        text-shadow: 0 0 5px var(--bright-gold);
+    }
+
+.attribute-mod {
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.skills-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.skill-row {
+    display: flex;
+    align-items: center;
+}
+
+    .skill-row input[type="checkbox"] {
+        margin-right: 8px;
+    }
+
+.skill-label {
+    flex: 1;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+    .skill-label:hover {
+        color: var(--bright-gold);
+    }
+
+.skill-attribute {
+    font-size: 0.8em;
+    color: var(--dark-gold);
+    margin-left: 5px;
+    text-shadow: none;
+}
+
+.sequence-abilities {
+    background: var(--bg-panel);
+    border: 1px solid var(--dark-gold);
+    padding: 5px;
+}
+
+.sequence-group {
+    margin-bottom: 10px;
+}
+
+.sequence-header {
+    font-family: var(--font-display);
+    cursor: pointer;
+    padding: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--dark-gold);
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    color: var(--bright-gold);
+    transition: background 0.2s ease;
+}
+
+    .sequence-header:hover {
+        background: rgba(197, 179, 137, 0.1);
+    }
+
+    .sequence-header i {
+        margin-right: 8px;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .sequence-header.active i {
+        transform: rotate(90deg);
+    }
+
+.ability-list {
+    list-style: none;
+    padding: 5px 0 5px 15px;
+    margin: 0;
+    display: none;
+}
+
+    .ability-list .item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 3px;
+        border-bottom: 1px dashed rgba(109, 97, 74, 0.3);
+        cursor: pointer;
+    }
+
+        .ability-list .item:last-child {
+            border-bottom: none;
+        }
+
+        .ability-list .item img {
+            border: none;
+        }
+
+.vitals-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px;
+    background: var(--bg-panel);
+    border: 1px solid var(--dark-gold);
+}
+
+.resource-counter {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 80px;
+    cursor: pointer;
+    border: 1px solid var(--dark-gold);
+    background: rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+    .resource-counter:hover {
+        box-shadow: 0 0 8px var(--bright-gold);
+        border-color: var(--bright-gold);
+    }
+
+    .resource-counter .resource-icon {
+        position: absolute;
+        width: 80%;
+        height: 80%;
+        opacity: 0.2;
+        pointer-events: none;
+    }
+
+    .resource-counter .resource-values {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2em;
+        font-family: var(--font-display);
+        color: var(--bright-gold);
+    }
+
+    .resource-counter .separator {
+        margin: 0 5px;
+        color: var(--dark-gold);
+    }
+
+    .resource-counter.single .resource-values {
+        font-size: 2.8em;
+    }
+
+.resource-controls {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+    .resource-controls .control-button {
+        color: var(--dark-gold);
+        font-size: 0.8em;
+    }
+
+        .resource-controls .control-button:hover {
+            color: var(--bright-gold);
+        }
+
+.movement-display {
+    background: transparent;
+    border: none;
+    cursor: default;
+    flex-direction: column;
+    height: auto;
+    padding: 10px 0;
+}
+
+    .movement-display label {
+        font-family: var(--font-display);
+        font-size: 1.1em;
+        border-bottom: 1px solid var(--dark-gold);
+        margin-bottom: 5px;
+        color: var(--bright-gold);
+    }
+
+.movement-value {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--bright-gold);
+}
+
+.tab.inventory .items-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--dark-gold);
+    background: var(--bg-panel);
+}
+
+.tab.inventory .item-header {
+    font-family: var(--font-display);
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 5px 10px;
+    border-bottom: 1px solid var(--dark-gold);
+    display: flex;
+    align-items: center;
+}
+
+    .tab.inventory .item-header .item-name {
+        flex: 1;
+    }
+
+    .tab.inventory .item-header .item-controls {
+        display: flex;
+        gap: 10px;
+    }
+
+.tab.inventory .item {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    border-bottom: 1px dashed rgba(109, 97, 74, 0.3);
+}
+
+    .tab.inventory .item:last-child {
+        border-bottom: none;
+    }
+
+.tab.inventory .item-image {
+    flex: 0 0 40px;
+    height: 40px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--dark-gold);
+    background: rgba(0,0,0,0.2);
+}
+
+    .tab.inventory .item-image img {
+        max-width: 36px;
+        max-height: 36px;
+        border: none;
+        object-fit: contain;
+    }
+
+.tab.inventory .item-name {
+    flex: 1;
+    font-size: 1.1em;
+}
+
+.tab.inventory .item-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.tab.inventory .item-control {
+    color: var(--primary-gold);
+    cursor: pointer;
+}
+
+    .tab.inventory .item-control:hover {
+        color: var(--bright-gold);
+    }
+
+.tab.biography .editor {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.tab.biography .editor-content {
+    flex: 1;
+    background: var(--bg-panel);
+    border: 1px solid var(--dark-gold);
+    padding: 10px;
+    overflow-y: auto;
+}

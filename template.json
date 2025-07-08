@@ -1,0 +1,213 @@
+{
+  "Actor": {
+    "types": [
+      "character"
+    ],
+    "character": {
+      "attributes": {
+        "musculature": {
+          "value": 10,
+          "mod": 0,
+          "label": "Мускулатура"
+        },
+        "durability": {
+          "value": 10,
+          "mod": 0,
+          "label": "Стойкость"
+        },
+        "flexibility": {
+          "value": 10,
+          "mod": 0,
+          "label": "Гибкость"
+        },
+        "sustainability": {
+          "value": 10,
+          "mod": 0,
+          "label": "Устойчивость"
+        },
+        "concentration": {
+          "value": 10,
+          "mod": 0,
+          "label": "Концентрация"
+        },
+        "madness": {
+          "value": 10,
+          "mod": 0,
+          "label": "Безумство"
+        },
+        "character": {
+          "value": 10,
+          "mod": 0,
+          "label": "Характер"
+        },
+        "luck": {
+          "value": 10,
+          "mod": 0,
+          "label": "Удача"
+        }
+      },
+      "health": {
+        "value": 10,
+        "max": 10
+      },
+      "mentalHealth": {
+        "value": 10,
+        "max": 10
+      },
+      "armor": {
+        "physical": {
+          "value": 0,
+          "label": "Физическая броня"
+        },
+        "magical": {
+          "value": 0,
+          "label": "Магическая броня"
+        }
+      },
+      "resources": {
+        "hunger": {
+          "value": 0,
+          "max": 10
+        },
+        "sequence": {
+          "value": 9,
+          "max": 9
+        }
+      },
+      "movement": {
+        "base": 5,
+        "total": 5,
+        "units": "hex"
+      },
+      "skills": {
+        "athletics": {
+          "proficient": false,
+          "attribute": "musculature",
+          "label": "Атлетика"
+        },
+        "craft": {
+          "proficient": false,
+          "attribute": "musculature",
+          "label": "Ремесло"
+        },
+        "mysticism": {
+          "proficient": false,
+          "attribute": "concentration",
+          "label": "Мистика"
+        },
+        "search": {
+          "proficient": false,
+          "attribute": "concentration",
+          "label": "Поиск"
+        },
+        "history": {
+          "proficient": false,
+          "attribute": "concentration",
+          "label": "История"
+        },
+        "nature": {
+          "proficient": false,
+          "attribute": "concentration",
+          "label": "Природа"
+        },
+        "analysis": {
+          "proficient": false,
+          "attribute": "concentration",
+          "label": "Анализ текста"
+        },
+        "medicine": {
+          "proficient": false,
+          "attribute": "concentration",
+          "label": "Медицина"
+        },
+        "religion": {
+          "proficient": false,
+          "attribute": "madness",
+          "label": "Религия"
+        },
+        "hexes": {
+          "proficient": false,
+          "attribute": "madness",
+          "label": "Знание Сглаза"
+        },
+        "acrobatics": {
+          "proficient": false,
+          "attribute": "flexibility",
+          "label": "Акробатика"
+        },
+        "sleightOfHand": {
+          "proficient": false,
+          "attribute": "flexibility",
+          "label": "Ловкость Рук"
+        },
+        "stealth": {
+          "proficient": false,
+          "attribute": "flexibility",
+          "label": "Скрытность"
+        },
+        "insight": {
+          "proficient": false,
+          "attribute": "character",
+          "label": "Проницательность"
+        },
+        "intimidation": {
+          "proficient": false,
+          "attribute": "character",
+          "label": "Запугивание"
+        },
+        "persuasion": {
+          "proficient": false,
+          "attribute": "character",
+          "label": "Убеждение"
+        },
+        "performance": {
+          "proficient": false,
+          "attribute": "character",
+          "label": "Выступление"
+        },
+        "gambling": {
+          "proficient": false,
+          "attribute": "luck",
+          "label": "Азартные игры"
+        },
+        "flirting": {
+          "proficient": false,
+          "attribute": "luck",
+          "label": "Флирт"
+        },
+        "fishing": {
+          "proficient": false,
+          "attribute": "luck",
+          "label": "Рыбалка"
+        }
+      },
+      "pathway": "",
+      "sequenceName": "",
+      "biography": ""
+    }
+  },
+  "Item": {
+    "types": [ "weapon", "armor", "equipment", "ability", "consumable" ],
+    "weapon": {
+      "description": "",
+      "damage": "1d8",
+      "rangeShort": 10,
+      "rangeNormal": 30,
+      "rangeLong": 60,
+      "rangeExtreme": 120,
+      "misfire": 1,
+      "proficiency": "smallFirearms"
+    },
+    "armor": {
+      "description": "",
+      "physicalBonus": 0,
+      "magicalBonus": 0
+    },
+    "ability": {
+      "description": "",
+      "sequence": 9,
+      "cooldown": "",
+      "cost": ""
+    }
+  }
+}
