@@ -77,7 +77,8 @@
       "movement": {
         "base": 5,
         "total": 5,
-        "units": "hex"
+        "units": "hex",
+        "dashCooldown": 0
       },
       "skills": {
         "athletics": {
@@ -182,8 +183,24 @@
         }
       },
       "pathway": "",
+      "pathwayLevel": 0,
       "sequenceName": "",
-      "biography": ""
+      "biography": "",
+      "weaponProficiencies": {
+        "shortBlades": false,
+        "longBlades": false,
+        "shortPolearms": false,
+        "longPolearms": false,
+        "doubleWeapons": false,
+        "chainedWeapons": false,
+        "throwingWeapons": false,
+        "fistCombat": false,
+        "shortBows": false,
+        "longBows": false,
+        "crossbows": false,
+        "smallCaliberFirearms": false,
+        "largeCaliberFirearms": false
+      }
     }
   },
   "Item": {
@@ -283,12 +300,49 @@
         "type": "String"
       },
       "range": {
-        "value": "",
-        "type": "String"
+        "short": 0,
+        "standard": 0,
+        "long": 0,
+        "extreme": 0,
+        "units": "hex"
       },
       "equipped": {
         "type": "Boolean",
         "value": false
+      },
+      "maxShots": {
+        "type": "Number",
+        "value": 1
+      },
+      "primaryAttackCount": {
+        "type": "Number",
+        "value": 1
+      },
+      "secondaryAttackCount": {
+        "type": "Number",
+        "value": 0
+      },
+      "cooldown": {
+        "current": {
+          "type": "Number",
+          "value": 0
+        },
+        "max": {
+          "type": "Number",
+          "value": 0
+        },
+        "shotsPerTurn": {
+          "type": "Number",
+          "value": 1
+        }
+      },
+      "misfireValue": {
+        "type": "Number",
+        "value": 1
+      },
+      "weaponType": {
+        "type": "String",
+        "value": ""
       }
     },
     "armor": {

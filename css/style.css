@@ -1,4 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400&display=swap');
+
+/* Определяем шрифт Caslon Antique */
+@font-face {
+    font-family: 'Caslon Antique';
+    src: url('../assets/fonts/caslonantique.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Определяем шрифт Kaliningrad Historical */
+@font-face {
+    font-family: 'Kaliningrad Historical';
+    src: url('../assets/fonts/Kaliningrad_Historical.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
 
 :root {
     --primary-gold: #c5b389;
@@ -6,8 +21,8 @@
     --bright-gold: #f0e0b8;
     --bg-color: #1a1a1a;
     --bg-panel: rgba(15, 15, 15, 0.6);
-    --font-main: 'Roboto', sans-serif;
-    --font-display: 'Cinzel', serif;
+    --font-main: 'Caslon Antique', serif; /* Используем Caslon Antique для основного текста */
+    --font-display: 'Kaliningrad Historical', serif; /* Используем Kaliningrad Historical для заголовков и счетчиков */
     --text-shadow: 0 0 5px rgba(0,0,0,0.8);
 }
 
@@ -43,6 +58,16 @@
     text-shadow: var(--text-shadow);
 }
 
+/* Применяем шрифт Kaliningrad Historical для заголовков и счетчиков */
+.sheet-header .charname input,
+.resource-values,
+.movement-value,
+.panel-label,
+.box-label,
+.sheet-tabs .item {
+    font-family: var(--font-display);
+}
+
 .sheet-header {
     display: flex;
     padding: 10px;
@@ -64,7 +89,6 @@
         width: 100%;
         height: 40px;
         font-size: 32px;
-        font-family: var(--font-display);
         border: none;
         background: transparent;
         color: var(--bright-gold);
@@ -93,7 +117,6 @@ input[type="text"], input[type="number"] {
         flex: 1;
         text-align: center;
         padding: 10px;
-        font-family: var(--font-display);
         font-size: 1.2em;
         background: var(--bg-panel);
         border-top: 1px solid var(--dark-gold);
@@ -110,8 +133,6 @@ input[type="text"], input[type="number"] {
         .sheet-tabs .item.active {
             background: transparent;
             border-bottom: none;
-            color: var(--bright-gold);
-            text-shadow: 0 0 5px var(--bright-gold);
         }
 
         .sheet-tabs .item:hover {
@@ -138,7 +159,6 @@ input[type="text"], input[type="number"] {
 }
 
 .panel-label, .box-label {
-    font-family: var(--font-display);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.5px;
@@ -217,7 +237,7 @@ input[type="text"], input[type="number"] {
 
 .skill-attribute {
     font-size: 0.8em;
-    color: var(--dark-gold);
+    color: white;
     margin-left: 5px;
     text-shadow: none;
 }
@@ -324,7 +344,6 @@ input[type="text"], input[type="number"] {
         align-items: center;
         justify-content: center;
         font-size: 2.2em;
-        font-family: var(--font-display);
         color: var(--bright-gold);
     }
 
@@ -466,3 +485,4 @@ input[type="text"], input[type="number"] {
     padding: 10px;
     overflow-y: auto;
 }
+

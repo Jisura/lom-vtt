@@ -6,10 +6,12 @@
     "\\css",
     "\\lang",
     "\\module",
+    "\\module\\documents",
+    "\\module\\sheets",
     "\\templates",
     "\\templates\\chat",
     "\\templates\\sheets"
   ],
-  "SelectedNode": "\\module\\LordOfMysteries.mjs",
+  "SelectedNode": "\\module\\sheets\\actor-sheet.mjs",
   "PreviewInSolutionExplorer": false
 }

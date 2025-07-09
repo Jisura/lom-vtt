@@ -2,22 +2,17 @@
 
 import { LOMLegendsActor } from "../documents/actor.mjs";
 
-// Запасное изображение для предметов без иконки
-const DEFAULT_TOKEN = "icons/svg/mystery-man.svg"; // Убедитесь, что этот путь верен или измените его
+const DEFAULT_TOKEN = "icons/svg/mystery-man.svg";
 
-// ИСПОЛЬЗУЕМ НОВЫЙ API
 const { ActorSheet } = foundry.appv1.sheets;
-const { getProperty, mergeObject } = foundry.utils; // Импортируем getProperty и mergeObject
-const { TextEditor } = foundry.applications.ux; // Импортируем TextEditor
+const { getProperty, mergeObject } = foundry.utils;
+const { TextEditor } = foundry.applications.ux;
 
-/**
- * Расширяем базовый ActorSheet для персонажей системы Lord of Mysteries.
- */
 export class LOMLegendsActorSheet extends ActorSheet {
 
     /** @override */
     static get defaultOptions() {
-        return mergeObject(super.defaultOptions, { // Используем импортированный mergeObject
+        return foundry.utils.mergeObject(super.defaultOptions, {
             classes: ["lotm-rpg", "sheet", "actor", "character"],
             template: "systems/LordOfMysteries/templates/sheets/actor-sheet.hbs",
             width: 950,
@@ -32,11 +27,11 @@ export class LOMLegendsActorSheet extends ActorSheet {
     async getData() {
         const context = await super.getData();
         context.actor = context.document;
-        context.system = context.document.system;
+        context.system = context.document.system; // actor.system уже будет содержать рассчитанные данные из prepareData()
         context.isGM = game.user.isGM;
-        this._prepareCharacterData(context);
+        // this._prepareCharacterData(context); // ЭТА СТРОКА УДАЛЕНА: Расчеты теперь в LOMLegendsActor.prepareData()
         this._prepareItems(context);
-        context.biographyHTML = await TextEditor.enrichHTML(context.system.biography, { // Используем импортированный TextEditor
+        context.biographyHTML = await TextEditor.enrichHTML(context.system.biography, {
             secrets: this.actor.isOwner,
             async: true
         });
@@ -45,21 +40,10 @@ export class LOMLegendsActorSheet extends ActorSheet {
 
     /**
      * Вспомогательный метод для расчета производных данных.
-     * Лучше перенести эту логику в LOMLegendsActor.prepareData().
-     * @param {Object} context Контекст данных листа.
-     * @private
+     * ЭТОТ МЕТОД УДАЛЕН ИЗ actor-sheet.mjs,
+     * ТАК КАК ВСЯ ЛОГИКА ПЕРЕНЕСЕНА В LOMLegendsActor.prepareData().
      */
-    _prepareCharacterData(context) {
-        const systemData = context.system;
-        for (let [key, attribute] of Object.entries(systemData.attributes)) {
-            attribute.mod = Math.floor((Number(attribute.value) - 10) / 2);
-        }
-        for (let [key, skill] of Object.entries(systemData.skills)) {
-            const attributeKey = skill.attribute;
-            const attributeMod = systemData.attributes[attributeKey].mod;
-            skill.value = (skill.proficient ? 2 : 0) + attributeMod;
-        }
-    }
+    // _prepareCharacterData(context) { /* Этот метод больше не нужен */ }
 
     /**
      * Группирует предметы по категориям для инвентаря.
@@ -97,6 +81,8 @@ export class LOMLegendsActorSheet extends ActorSheet {
         html.find('.resource-counter').mousedown(this._onResourceClick.bind(this));
         html.find('.control-button[data-action="manual-set-resource"]').click(this._onManualSetResource.bind(this));
         html.find('.control-button[data-action="edit-max-resource"]').click(this._onEditMaxResource.bind(this));
+        html.find('.item-control[data-action="edit-actor-image"]').click(this._onEditActorImage.bind(this));
+        html.find('.item-control[data-action="edit-token-image"]').click(this._onEditTokenImage.bind(this));
         html.find('.sequence-header').click(ev => {
             const header = $(ev.currentTarget);
             const content = header.siblings('.ability-list');
@@ -126,10 +112,10 @@ export class LOMLegendsActorSheet extends ActorSheet {
         const rollFormula = `1d20 + ${attribute.mod}`;
         const rollLabel = `Проверка: ${attribute.label}`;
         const roll = new Roll(rollFormula, this.actor.getRollData());
-        await roll.evaluate(); // УБРАН async: true
+        await roll.evaluate();
         const chatData = {
             speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-            content: await renderTemplate("systems/LordOfMysteries/templates/chat/roll-card.hbs", {
+            content: await foundry.applications.handlebars.renderTemplate("systems/LordOfMysteries/templates/chat/roll-card.hbs", {
                 roll: roll,
                 actor: this.actor,
                 label: rollLabel,
@@ -156,10 +142,10 @@ export class LOMLegendsActorSheet extends ActorSheet {
         const rollFormula = `1d20 + ${skill.value}`;
         const rollLabel = `Проверка: ${skill.label}`;
         const roll = new Roll(rollFormula, this.actor.getRollData());
-        await roll.evaluate(); // УБРАН async: true
+        await roll.evaluate();
         const chatData = {
             speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-            content: await renderTemplate("systems/LordOfMysteries/templates/chat/roll-card.hbs", {
+            content: await foundry.applications.handlebars.renderTemplate("systems/LordOfMysteries/templates/chat/roll-card.hbs", {
                 roll: roll,
                 actor: this.actor,
                 label: rollLabel,
@@ -265,7 +251,7 @@ export class LOMLegendsActorSheet extends ActorSheet {
         const change = parseInt(element.dataset.change);
         if (!resourcePath || isNaN(change)) return;
         const maxPath = `${resourcePath}.max`;
-        let maxValue = getProperty(this.actor, maxPath); // Используем импортированный getProperty
+        let maxValue = getProperty(this.actor, maxPath);
         if (typeof maxValue !== 'number') return;
         let newMax = maxValue + change;
         if (newMax < 0) newMax = 0;
@@ -308,4 +294,25 @@ export class LOMLegendsActorSheet extends ActorSheet {
         const item = this.actor.items.get(li.dataset.itemId);
         if (item) await item.delete();
     }
+
+    async _onEditActorImage(event) {
+        event.preventDefault();
+        const fp = new FilePicker({
+            type: "image",
+            current: this.actor.img,
+            callback: path => this.actor.update({ 'img': path })
+        });
+        return fp.browse();
+    }
+
+    async _onEditTokenImage(event) {
+        event.preventDefault();
+        const fp = new FilePicker({
+            type: "image",
+            current: this.actor.token.img,
+            callback: path => this.actor.update({ 'token.img': path })
+        });
+        return fp.browse();
+    }
+
 }

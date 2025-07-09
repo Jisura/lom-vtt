@@ -9,13 +9,10 @@ import { LOMLegendsActorSheet } from "./sheets/actor-sheet.mjs";
 import { LOMLegendsItemSheet } from "./sheets/item-sheet.mjs";
 
 // Импортируем конфигурацию системы
-import { LOM as LOMLegendsConfig } from "../config.mjs";
+import { LOM as LOMLegendsConfig } from "./config.mjs";
 
 // Импортируем хелпер для предзагрузки шаблонов
-import { preloadHandlebarsTemplates } from "../helpers.mjs";
-
-// Импортируем getProperty из foundry.utils для использования в Handlebars хелпере
-import { getProperty } from "../node_modules/foundry-vtt-types/src/foundry/common/utils/helpers.d.ts"; // <--- ИСПРАВЛЕНО: ПУТЬ К getProperty
+import { preloadHandlebarsTemplates } from "./helpers.mjs";
 
 /* ------------------------------------ */
 /* Initialize system                    */
@@ -42,8 +39,8 @@ Hooks.once('init', async function() {
     // Регистрируем хелперы для Handlebars
     Handlebars.registerHelper('eq', (a, b) => a === b);
     
-    // ИСПОЛЬЗУЕМ ИМПОРТИРОВАННЫЙ getProperty
-    Handlebars.registerHelper('getProperty', (obj, key) => getProperty(obj, key));
+    // ИСПОЛЬЗУЕМ foundry.utils.getProperty НАПРЯМУЮ
+    Handlebars.registerHelper('getProperty', (obj, key) => foundry.utils.getProperty(obj, key));
 });
 
 /* ------------------------------------ */
@@ -59,4 +56,36 @@ Hooks.once('setup', function() {
 /* ------------------------------------ */
 Hooks.once('ready', function() {
     console.log('LOM | Lord of Mysteries System is Ready!');
+
+    // ДОБАВЛЕН ХУК ДЛЯ ПЕРЕБРОСА СООБЩЕНИЙ В ЧАТЕ
+    Hooks.on("renderChatMessage", (message, html, data) => {
+        // Если это сообщение броска, и у нас есть кнопка переброса
+        if (message.isRoll && game.user.isGM) { // Только ГМ может перебрасывать
+            const rerollButton = html.find("button[data-action='reroll-card']");
+            if (rerollButton.length) {
+                rerollButton.click(async (event) => {
+                    event.preventDefault();
+                    // Используем message.rolls[0] для простоты, если предполагается один бросок на сообщение
+                    const originalRoll = message.rolls[0]; 
+                    
+                    if (originalRoll) {
+                        const newRoll = new Roll(originalRoll.formula, originalRoll.data);
+                        await newRoll.evaluate();
+                        
+                        // Создать новое сообщение с перебросом
+                        newRoll.toMessage({
+                            speaker: message.speaker,
+                            flavor: `${message.flavor} (Переброс)`,
+                            rollMode: message.rollMode,
+                            flags: { "core.canPopout": true }
+                        });
+                        // Если хотите обновить текущее сообщение вместо создания нового, используйте:
+                        // await message.update({ rolls: [newRoll.toJSON()] });
+                    } else {
+                        ui.notifications.warn(game.i18n.localize("LOM.Notify.OriginalRollNotFound")); // Используем локализацию
+                    }
+                });
+            }
+        }
+    });
 });
