@@ -1,17 +1,17 @@
 // module/LordOfMysteries.mjs
 
-// Импортируем классы документов (Actor, Item)
+// Import document classes
 import { LOMLegendsActor } from "./documents/actor.mjs";
 import { LOMLegendsItem } from "./documents/item.mjs";
 
-// Импортируем классы листов (ActorSheet, ItemSheet)
+// Import sheet classes
 import { LOMLegendsActorSheet } from "./sheets/actor-sheet.mjs";
 import { LOMLegendsItemSheet } from "./sheets/item-sheet.mjs";
 
-// Импортируем конфигурацию системы
+// Import system configuration
 import { LOM as LOMLegendsConfig } from "./config.mjs";
 
-// Импортируем хелпер для предзагрузки шаблонов
+// Import helper for preloading templates
 import { preloadHandlebarsTemplates } from "./helpers.mjs";
 
 /* ------------------------------------ */
@@ -20,34 +20,40 @@ import { preloadHandlebarsTemplates } from "./helpers.mjs";
 Hooks.once('init', async function() {
     console.log('LOM | Initializing Lord of Mysteries System');
 
-    // Присваиваем наши классы документов в CONFIG
+    // Assign document classes to CONFIG
     CONFIG.Actor.documentClass = LOMLegendsActor;
     CONFIG.Item.documentClass = LOMLegendsItem;
 
-    // Присваиваем нашу конфигурацию в CONFIG.LOM для глобального доступа
+    // Assign system configuration to CONFIG.LOM
     CONFIG.LOM = LOMLegendsConfig;
 
-    // Регистрируем листы для актеров
+    // Register actor sheets
     foundry.documents.collections.Actors.registerSheet("LordOfMysteries", LOMLegendsActorSheet, { types: ["character"], makeDefault: true });
 
-    // Регистрируем листы для предметов
+    // Register item sheets
     foundry.documents.collections.Items.registerSheet("LordOfMysteries", LOMLegendsItemSheet, {
         types: ["item", "skill", "ability", "spell", "weapon", "armor", "equipment", "consumable"],
         makeDefault: true
     });
 
-    // Регистрируем хелперы для Handlebars
+    // Register Handlebars helpers
     Handlebars.registerHelper('eq', (a, b) => a === b);
-    
-    // ИСПОЛЬЗУЕМ foundry.utils.getProperty НАПРЯМУЮ
     Handlebars.registerHelper('getProperty', (obj, key) => foundry.utils.getProperty(obj, key));
+    Handlebars.registerHelper('capitalize', (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : '');
+
+    /**
+     * Handlebars helper to strip HTML tags from a string.
+     * Useful for creating clean tooltips from rich text editor content.
+     */
+    Handlebars.registerHelper("stripTags", (html) => html ? (new DOMParser().parseFromString(html, 'text/html')).body.textContent || "" : "");
 });
+
 
 /* ------------------------------------ */
 /* Setup system                         */
 /* ------------------------------------ */
 Hooks.once('setup', function() {
-    // Предзагружаем шаблоны Handlebars
+    // Preload Handlebars templates
     preloadHandlebarsTemplates();
 });
 
@@ -57,32 +63,48 @@ Hooks.once('setup', function() {
 Hooks.once('ready', function() {
     console.log('LOM | Lord of Mysteries System is Ready!');
 
-    // ДОБАВЛЕН ХУК ДЛЯ ПЕРЕБРОСА СООБЩЕНИЙ В ЧАТЕ
-    Hooks.on("renderChatMessage", (message, html, data) => {
-        // Если это сообщение броска, и у нас есть кнопка переброса
-        if (message.isRoll && game.user.isGM) { // Только ГМ может перебрасывать
+    // Improved reroll hook for better functionality and consistent chat card style
+    Hooks.on("renderChatMessage", async (message, html, data) => {
+        if (game.user.isGM) {
             const rerollButton = html.find("button[data-action='reroll-card']");
-            if (rerollButton.length) {
-                rerollButton.click(async (event) => {
+            if (rerollButton.length > 0) {
+                rerollButton.on("click", async (event) => {
                     event.preventDefault();
-                    // Используем message.rolls[0] для простоты, если предполагается один бросок на сообщение
-                    const originalRoll = message.rolls[0]; 
-                    
-                    if (originalRoll) {
-                        const newRoll = new Roll(originalRoll.formula, originalRoll.data);
-                        await newRoll.evaluate();
-                        
-                        // Создать новое сообщение с перебросом
-                        newRoll.toMessage({
-                            speaker: message.speaker,
-                            flavor: `${message.flavor} (Переброс)`,
-                            rollMode: message.rollMode,
-                            flags: { "core.canPopout": true }
+
+                    const originalRoll = message.rolls[0];
+                    if (!originalRoll) {
+                        ui.notifications.warn(game.i18n.localize("LOM.Notify.OriginalRollNotFound"));
+                        return;
+                    }
+
+                    const newRoll = await originalRoll.reroll({ async: true });
+                    const actor = game.actors.get(message.speaker.actor);
+                    const originalLabel = html.find('.roll-title').text();
+                    const newLabel = `${game.i18n.localize("LOM.RerollOf")} ${originalLabel}`;
+
+                    try {
+                        // Render the new roll using the same custom template for consistency
+                        const chatContent = await renderTemplate("systems/LordOfMysteries/templates/chat/roll-card.hbs", {
+                            has_critical: newRoll.isCritical,
+                            has_fumble: newRoll.isFumble,
+                            formula: newRoll.formula,
+                            label: newLabel,
+                            actor: actor,
+                            isGM: game.user.isGM,
+                            roll: newRoll
                         });
-                        // Если хотите обновить текущее сообщение вместо создания нового, используйте:
-                        // await message.update({ rolls: [newRoll.toJSON()] });
-                    } else {
-                        ui.notifications.warn(game.i18n.localize("LOM.Notify.OriginalRollNotFound")); // Используем локализацию
+
+                        // Create the new chat message
+                        await ChatMessage.create({
+                            speaker: ChatMessage.getSpeaker({ actor: actor }),
+                            content: chatContent,
+                            type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+                            roll: newRoll,
+                            sound: CONFIG.sounds.dice
+                        });
+                    } catch (error) {
+                        console.error("Error rendering chat card:", error);
+                        ui.notifications.error(game.i18n.localize("LOM.Notify.RerollFailed"));
                     }
                 });
             }

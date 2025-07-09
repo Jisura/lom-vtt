@@ -80,5 +80,10 @@
   "LOM.SkillSurvival": "Survival",
   "LOM.SkillDeception": "Deception",
   "LOM.SkillPersuasion": "Persuasion",
-  "LOM.SkillIntimidation": "Intimidation"
+  "LOM.SkillIntimidation": "Intimidation",
+  "LOM.PortraitArt": "Portrait Art",
+  "LOM.Tagline": "Tagline or short description...",
+  "LOM.ToggleImage": "Toggle between Token and Portrait Art",
+  "LOM.ClickToChangeToken": "Click to change Token",
+  "LOM.ClickToChangePortrait": "Click to change Portrait Art"
 }
