@@ -2,7 +2,7 @@
   "id": "LordOfMysteries",
   "title": "Lord of Mysteries RPG",
   "description": "A custom d20 system for the Lord of Mysteries setting.",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "esmodules": [
     "module/LordOfMysteries.mjs"
   ],
