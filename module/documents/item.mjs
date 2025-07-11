@@ -1,68 +1,70 @@
 // module/documents/item.mjs
 
 /**
- * Расширяем базовый класс Item для добавления специфичной логики системы.
+ * Расширенный класс документа Item для добавления специфичной логики системы.
  */
 export class LOMLegendsItem extends Item {
 
     /**
-     * Пример метода для броска предмета.
-     * Вы можете расширить его для разных типов предметов.
+     * Обработка броска предмета.
      */
     async roll() {
         console.log(`LOM | Rolling item: ${this.name}`);
-        
-        if (this.type === "weapon" && this.system.damage && this.system.damage.value) {
-            const rollFormula = this.system.damage.value;
-            const rollLabel = game.i18n.localize("LOM.Roll.WeaponDamage")
-                                .replace("{actorName}", this.actor ? this.actor.name : "Unknown Actor")
-                                .replace("{itemName}", this.name);
-            const rollData = this.actor ? this.actor.getRollData() : {};
 
-            const roll = new Roll(rollFormula, rollData);
-            await roll.evaluate();
+        const itemData = this.system;
+        let baseFormula = "";
+        let rollLabel = "";
+        let isRollable = false;
 
-            const chatData = {
-                speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-                content: await foundry.applications.handlebars.renderTemplate("systems/LordOfMysteries/templates/chat/roll-card.hbs", { // ИСПРАВЛЕНО
-                    roll: roll,
-                    actor: this.actor,
-                    label: rollLabel,
-                    formula: rollFormula,
-                    isGM: game.user.isGM
-                }),
-                type: CONST.CHAT_MESSAGE_TYPES.ROLL,
-                roll: roll,
-                sound: CONFIG.sounds.dice
-            };
-            ChatMessage.create(chatData);
-        } else if (this.type === "spell" && this.system.spellAttack && this.system.spellAttack.value) {
-            const rollFormula = this.system.spellAttack.value;
-            const rollLabel = game.i18n.localize("LOM.Roll.SpellAttack")
-                                .replace("{actorName}", this.actor ? this.actor.name : "Unknown Actor")
-                                .replace("{itemName}", this.name);
-            const rollData = this.actor ? this.actor.getRollData() : {};
-
-            const roll = new Roll(rollFormula, rollData);
-            await roll.evaluate();
-
-            const chatData = {
-                speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-                content: await foundry.applications.handlebars.renderTemplate("systems/LordOfMysteries/templates/chat/roll-card.hbs", { // ИСПРАВЛЕНО
-                    roll: roll,
-                    actor: this.actor,
-                    label: rollLabel,
-                    formula: rollFormula,
-                    isGM: game.user.isGM
-                }),
-                type: CONST.CHAT_MESSAGE_TYPES.ROLL,
-                roll: roll,
-                sound: CONFIG.sounds.dice
-            };
-            ChatMessage.create(chatData);
+        // Определяем базовую формулу и метку в зависимости от типа предмета
+        if (this.type === "weapon" && itemData.damage?.value) {
+            baseFormula = itemData.damage.value;
+            rollLabel = game.i18n.localize("LOM.Roll.WeaponDamage");
+            isRollable = true;
+        } else if (this.type === "spell" && itemData.spellAttack?.value) {
+            baseFormula = itemData.spellAttack.value;
+            rollLabel = game.i18n.localize("LOM.Roll.SpellAttack");
+            isRollable = true;
+        } else if (this.type === "ability" && itemData.rollFormula?.value) {
+            baseFormula = itemData.rollFormula.value;
+            rollLabel = this.name; // Для способностей используем их имя
+            isRollable = true;
         }
-        else {
+
+        if (!isRollable) {
             ui.notifications.info(game.i18n.localize("LOM.Notify.ItemNotDirectlyRollable").replace("{itemName}", this.name));
+            return;
         }
+
+        // Собираем полную формулу
+        let fullFormula = baseFormula;
+        const attributeKey = itemData.rollAttribute;
+        if (attributeKey && this.actor) {
+            // Добавляем модификатор, если он выбран
+            fullFormula += ` + @attributes.${attributeKey}.mod`;
+        }
+
+        const rollData = this.actor ? this.actor.getRollData() : {};
+        const roll = new Roll(fullFormula, rollData);
+        await roll.evaluate();
+
+        const finalLabel = rollLabel
+            .replace("{actorName}", this.actor ? this.actor.name : "Unknown Actor")
+            .replace("{itemName}", this.name);
+
+        const chatData = {
+            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+            content: await foundry.applications.handlebars.renderTemplate("systems/LordOfMysteries/templates/chat/roll-card.hbs", {
+                roll: roll,
+                actor: this.actor,
+                label: finalLabel,
+                formula: fullFormula, // Показываем полную формулу в чате
+                isGM: game.user.isGM
+            }),
+            type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+            roll: roll,
+            sound: CONFIG.sounds.dice
+        };
+        ChatMessage.create(chatData);
     }
 }

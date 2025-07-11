@@ -10,7 +10,7 @@
     <section class="sheet-body">
         <div class="form-group">
             <label>{{localize "LOM.Item.Description"}}</label>
-            {{editor system.description.value target="system.description.value" button=true owner=owner editable=editable}}
+            {{{editor enrichedDescription target="system.description.value" button=true owner=owner editable=editable}}}
         </div>
 
         {{!-- Weapon Specific Fields --}}
@@ -20,6 +20,12 @@
             <div class="form-group">
                 <label>{{localize "LOM.Item.Damage"}}</label>
                 <input type="text" name="system.damage.value" value="{{system.damage.value}}" data-dtype="String" />
+                <select name="system.rollAttribute">
+                    <option value="">{{localize "LOM.None"}}</option>
+                    {{#each config.attributes as |attr key|}}
+                    <option value="{{key}}" {{#if (eq key ../system.rollAttribute)}} selected{{/if}}>{{attr.label}}</option>
+                    {{/each}}
+                </select>
             </div>
             <div class="form-group">
                 <label>{{localize "LOM.Item.Range"}}</label>
@@ -47,6 +53,12 @@
             <div class="form-group">
                 <label>{{localize "LOM.Item.SpellAttack"}}</label>
                 <input type="text" name="system.spellAttack.value" value="{{system.spellAttack.value}}" data-dtype="String" />
+                <select name="system.rollAttribute">
+                    <option value="">{{localize "LOM.None"}}</option>
+                    {{#each config.attributes as |attr key|}}
+                    <option value="{{key}}" {{#if (eq key ../system.rollAttribute)}} selected{{/if}}>{{attr.label}}</option>
+                    {{/each}}
+                </select>
             </div>
             <div class="form-group">
                 <label>{{localize "LOM.Item.SpellDamage"}}</label>
@@ -71,6 +83,12 @@
             <div class="form-group">
                 <label>{{localize "LOM.Item.RollFormula"}}</label>
                 <input type="text" name="system.rollFormula.value" value="{{system.rollFormula.value}}" data-dtype="String" />
+                <select name="system.rollAttribute">
+                    <option value="">{{localize "LOM.None"}}</option>
+                    {{#each config.attributes as |attr key|}}
+                    <option value="{{key}}" {{#if (eq key ../system.rollAttribute)}} selected{{/if}}>{{attr.label}}</option>
+                    {{/each}}
+                </select>
             </div>
             <div class="form-group">
                 <label>{{localize "LOM.Item.Uses"}}</label>

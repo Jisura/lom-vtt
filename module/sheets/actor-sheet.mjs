@@ -61,6 +61,9 @@ export class LOMLegendsActorSheet extends ActorSheet {
         };
         for (let i of context.actor.items) {
             i.img = i.img || DEFAULT_TOKEN;
+            i.isRollable = (i.type === 'weapon' && i.system.damage?.value) ||
+                           (i.type === 'spell' && i.system.spellAttack?.value) ||
+                           (i.type === 'ability' && i.system.rollFormula?.value);
             if (i.type in inventory) {
                 inventory[i.type].items.push(i);
             }
@@ -74,7 +77,7 @@ export class LOMLegendsActorSheet extends ActorSheet {
         if (!this.isEditable) return;
         html.find('.rollable-attribute').click(this._onAttributeRoll.bind(this));
         html.find('.rollable-skill').click(this._onSkillRoll.bind(this));
-        html.find('.item[data-action="roll-item"]').click(this._onRollItem.bind(this));
+        html.find('.item-roll').click(this._onRollItem.bind(this));
         html.find('.item-create').click(this._onItemCreate.bind(this));
         html.find('.item-delete').click(this._onItemDelete.bind(this));
         html.find('.item-edit, .ability-item[data-action="edit-item"]').click(this._onItemEdit.bind(this));
@@ -83,6 +86,7 @@ export class LOMLegendsActorSheet extends ActorSheet {
         html.find('.control-button[data-action="edit-max-resource"]').click(this._onEditMaxResource.bind(this));
         html.find('.item-control[data-action="edit-actor-image"]').click(this._onEditActorImage.bind(this));
         html.find('.item-control[data-action="edit-token-image"]').click(this._onEditTokenImage.bind(this));
+        html.find('.item-equip-toggle').click(this._onItemEquipToggle.bind(this));        
         html.find('.sequence-header').click(ev => {
             const header = $(ev.currentTarget);
             const content = header.siblings('.ability-list');
@@ -97,6 +101,22 @@ export class LOMLegendsActorSheet extends ActorSheet {
         const item = await Item.fromDropData(data);
         if (!item) return;
         return await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
+    }
+
+    /**
+     * Обработка переключения статуса экипировки предмета.
+     * @param {Event} event
+     * @private
+     */
+    async _onItemEquipToggle(event) {
+        event.preventDefault();
+        const checkbox = event.currentTarget;
+        const li = checkbox.closest("[data-item-id]");
+        const item = this.actor.items.get(li.dataset.itemId);
+        
+        if (item) {
+            await item.update({ 'system.equipped': checkbox.checked });
+        }
     }
 
     /**
